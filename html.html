@@ -98,7 +98,8 @@ let milestones = [
   { goal: 1000000, achieved: false }
 ];
 
-let playerName = prompt('Enter your player name:');
+let playerName = localStorage.getItem('playerName') || prompt('Enter your player name:');
+localStorage.setItem('playerName', playerName);
 document.getElementById('playerName').textContent = playerName;
 
 const coinsDisplay = document.getElementById('coins');
@@ -116,6 +117,7 @@ let musicEnabled = true;
 document.getElementById('startGameButton').addEventListener('click', () => {
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
+  loadProgress();
 });
 
 document.getElementById('clickButton').addEventListener('click', () => {
@@ -142,7 +144,13 @@ document.getElementById('fastClickerButton').addEventListener('click', () => {
   }
 });
 
-// Save Progress
+function updateDisplay() {
+  coinsDisplay.textContent = coins;
+  autoClickersDisplay.textContent = autoClickers;
+  fastClickersDisplay.textContent = fastClickers;
+  levelDisplay.textContent = level;
+}
+
 function saveProgress() {
   const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
   localStorage.setItem('idleGameSave', saveData);
@@ -150,35 +158,24 @@ function saveProgress() {
 
 document.getElementById('saveButton').addEventListener('click', saveProgress);
 
-document.getElementById('exportButton').addEventListener('click', () => {
-  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
-  const blob = new Blob([saveData], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'idleGameSave.json';
-  a.click();
-  URL.revokeObjectURL(url);
+document.getElementById('loadButton').addEventListener('click', () => {
+  loadProgress();
+  updateDisplay();
 });
 
-document.getElementById('importButton').addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const data = JSON.parse(e.target.result);
-    coins = data.coins;
-    autoClickers = data.autoClickers;
-    fastClickers = data.fastClickers;
-    level = data.level;
-    milestones = data.milestones;
-    playerName = data.playerName;
-    updateDisplay();
-  };
-  reader.readAsText(file);
-});
+function loadProgress() {
+  const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
+  coins = saveData.coins || 0;
+  autoClickers = saveData.autoClickers || 0;
+  fastClickers = saveData.fastClickers || 0;
+  level = saveData.level || 1;
+  milestones = saveData.milestones || milestones;
+}
+
 setInterval(() => {
   coins += autoClickers + (fastClickers * 5);
   updateDisplay();
+  saveProgress();
 }, 1000);
 </script>
 </body>
