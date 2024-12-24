@@ -104,7 +104,7 @@
     <button onclick="playMoneySound()"  id="clickButton">Click Me!</button>
     <button onclick="playBuySound()" id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
     <button onclick="playBuySound()" id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
-    <button id="saveButton">Save Game</button>
+    <button onclick="savealert()" id="saveButton">Save Game</button>
     <button id="toggleMusicButton">Toggle Music</button>
     <div class="stats">
       <p>Auto-Clickers: <span id="autoClickers">0</span></p>
@@ -222,6 +222,7 @@ function saveProgress() {
   localStorage.setItem('level', level);
   localStorage.setItem('coinsNeededForNextLevel', coinsNeededForNextLevel);
   localStorage.setItem('milestones', JSON.stringify(milestones));
+  localStorage.setItem('name', name);
   updateScoreboard();
 }
 
@@ -232,7 +233,12 @@ function loadProgress() {
   level = parseInt(localStorage.getItem('level')) || 1;
   coinsNeededForNextLevel = parseInt(localStorage.getItem('coinsNeededForNextLevel')) || 100;
   milestones = JSON.parse(localStorage.getItem('milestones')) || milestones;
+  name = parseInt(localStorage.getItem('name'))
   updateDisplay();
+}
+
+function savealert() {
+alert("You have saved the game Sucessfully!")
 }
 
 function generateCoins() {
