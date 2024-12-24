@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <audio id="buySound" src="buy-sound.mp3"></audio>
+  <audio id="bgMusic" src="background-music.mp3" loop autoplay></audio>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idle Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(to bottom, #87ceeb, #f0e68c);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #game {
+      text-align: center;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 18px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #cccccc;
+    }
+    .stats {
+      margin-top: 20px;
+    }
+    .level {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .scoreboard {
+      margin-top: 30px;
+      background: #f8f8f8;
+      padding: 10px;
+      border-radius: 10px;
+      width: 300px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .scoreboard h2 {
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    .scoreboard ul {
+      list-style: none;
+      padding: 0;
+    }
+    .scoreboard li {
+      padding: 5px 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .milestones {
+      margin-top: 20px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 10px;
+      width: 300px;
+    }
+    .milestones h3 {
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    .milestones ul {
+      list-style: none;
+      padding: 0;
+    }
+    .milestones li {
+      padding: 5px 0;
+    }
+
+  </style>
+</head>
+<body>
+  <audio id="buySound" src="buy-sound.mp3"></audio>
+  <audio id="moneySound" src="money-sound.mp3"></audio>
+  <audio id="bgMusic" src="background-music.mp3" loop autoplay></audio>
+
+  <div id="game">
+    <h1>Idle Clicker Game</h1>
+    <p class="level">Level: <span id="level">1</span></p>
+    <p>Player: <span id="playerName"></span></p>
+    <p>Coins: <span id="coins">0</span></p>
+    <button onclick="playMoneySound()"  id="clickButton">Click Me!</button>
+    <button onclick="playBuySound()" id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
+    <button onclick="playBuySound()" id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
+    <button id="saveButton">Save Game</button>
+    <button id="toggleMusicButton">Toggle Music</button>
+    <div class="stats">
+      <p>Auto-Clickers: <span id="autoClickers">0</span></p>
+      <p>Fast Clickers: <span id="fastClickers">0</span></p>
+    </div>
+    <div class="milestones">
+      <h3>Milestones</h3>
+      <ul id="milestones"></ul>
+    </div>
+    <div class="scoreboard">
+      <h2>Scoreboard</h2>
+      <ul id="scoreboard"></ul>
+    </div>
+  </div>
+
+<script>
+// Variables
+// Idle Game JavaScript with Enhanced Save Features
+
+// Variables
+let coins = 0;
+let autoClickers = 0;
+let fastClickers = 0;
+let level = 1;
+let coinsNeededForNextLevel = 100;
+let playerName = loadPlayerName() || generateRandomName();
+
+// DOM Elements
+const coinsDisplay = document.getElementById("coins");
+const autoClickersDisplay = document.getElementById("autoClickers");
+const fastClickersDisplay = document.getElementById("fastClickers");
+const levelDisplay = document.getElementById("level");
+const playerNameDisplay = document.getElementById("playerName");
+const clickButton = document.getElementById("clickButton");
+const autoClickerButton = document.getElementById("autoClickerButton");
+const fastClickerButton = document.getElementById("fastClickerButton");
+const saveButton = document.getElementById("saveButton");
+const milestonesDisplay = document.getElementById("milestones");
+const scoreboardDisplay = document.getElementById("scoreboard");
+
+const buySound = document.getElementById('buySound');
+const moneySound = document.getElementById('moneySound');
+const bgMusic = document.getElementById('bgMusic');
+const toggleMusicButton = document.getElementById('toggleMusicButton');
+
+let musicEnabled = true;
+
+function playBuySound() {
+  if (musicEnabled) buySound.play();
+}
+
+function playMoneySound() {
+  if (musicEnabled) moneySound.play();
+}
+
+toggleMusicButton.addEventListener('click', () => {
+  musicEnabled = !musicEnabled;
+  if (musicEnabled) {
+    bgMusic.play();
+  } else {
+    bgMusic.pause();
+  }
+});
+
+// Milestones
+let milestones = [
+{ goal: 100, achieved: false },
+  { goal: 5000, achieved: false },
+  { goal: 1000000, achieved: false },
+  { goal: 500000000, achieved: false },
+  { goal: 100000000000000, achieved: false },
+];
+
+// Initialize Display
+playerNameDisplay.textContent = playerName;
+
+// Functions
+function updateDisplay() {
+  coinsDisplay.textContent = coins;
+  autoClickersDisplay.textContent = autoClickers;
+  fastClickersDisplay.textContent = fastClickers;
+  levelDisplay.textContent = level;
+  autoClickerButton.disabled = coins < 10;
+  fastClickerButton.disabled = coins < 100;
+  updateMilestonesDisplay();
+  updateScoreboard();
+}
+
+function generateRandomName() {
+  const adjectives = [
+    "Brave", "Swift", "Clever", "Bold", "Mighty", "Fierce", "Loyal", "Cunning", "Vigilant", "Fearless",
+    "Daring", "Epic", "Grand", "Heroic", "Noble", "Proud", "Rapid", "Stealthy", "Valiant", "Wily"
+  ];
+  const animals = [
+    "Tiger", "Eagle", "Fox", "Bear", "Wolf", "Panther", "Dragon", "Hawk", "Lion", "Falcon",
+    "Cheetah", "Jaguar", "Leopard", "Shark", "Viper", "Griffin", "Phoenix", "Raven", "Cobra", "Owl"
+  ];
+  const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+  return `${randomAdjective} ${randomAnimal}`;
+}
+
+function savePlayerName(name) {
+  localStorage.setItem("playerName", name);
+}
+
+function loadPlayerName() {
+  return localStorage.getItem("playerName");
+}
+
+function saveProgress() {
+  localStorage.setItem('coins', coins);
+  localStorage.setItem('autoClickers', autoClickers);
+  localStorage.setItem('fastClickers', fastClickers);
+  localStorage.setItem('level', level);
+  localStorage.setItem('coinsNeededForNextLevel', coinsNeededForNextLevel);
+  localStorage.setItem('milestones', JSON.stringify(milestones));
+  updateScoreboard();
+}
+
+function loadProgress() {
+  coins = parseInt(localStorage.getItem('coins')) || 0;
+  autoClickers = parseInt(localStorage.getItem('autoClickers')) || 0;
+  fastClickers = parseInt(localStorage.getItem('fastClickers')) || 0;
+  level = parseInt(localStorage.getItem('level')) || 1;
+  coinsNeededForNextLevel = parseInt(localStorage.getItem('coinsNeededForNextLevel')) || 100;
+  milestones = JSON.parse(localStorage.getItem('milestones')) || milestones;
+  updateDisplay();
+}
+
+function generateCoins() {
+  coins += autoClickers;
+  coins += fastClickers * 5;
+  checkMilestones();
+  checkLevelUp();
+  updateDisplay();
+}
+
+function checkLevelUp() {
+  if (coins >= coinsNeededForNextLevel) {
+    level++;
+    coins -= coinsNeededForNextLevel;
+    coinsNeededForNextLevel *= 2;
+  }
+}
+
+function checkMilestones() {
+  milestones.forEach(milestone => {
+    if (!milestone.achieved && coins >= milestone.goal) {
+      milestone.achieved = true;
+    }
+  });
+}
+
+function updateMilestonesDisplay() {
+  milestonesDisplay.innerHTML = milestones
+    .map(milestone => `
+      <li>${milestone.goal} coins: ${milestone.achieved ? "Achieved" : "Not Achieved"}</li>
+    `)
+    .join("");
+}
+
+function updateScoreboard() {
+  let scoreboard = JSON.parse(localStorage.getItem('scoreboard')) || [];
+  const playerData = { name: playerName, coins, autoClickers, fastClickers, level };
+  scoreboard = scoreboard.filter(player => player.name !== playerName);
+  scoreboard.push(playerData);
+  scoreboard.sort((a, b) => b.coins - a.coins);
+  localStorage.setItem('scoreboard', JSON.stringify(scoreboard));
+  scoreboardDisplay.innerHTML = scoreboard
+    .map(player => `<li>${player.name}: ${player.coins} Coins, Level ${player.level}</li>`)
+    .join('');
+}
+
+// Event Listeners
+clickButton.addEventListener("click", () => {
+  coins++;
+  updateDisplay();
+});
+
+autoClickerButton.addEventListener("click", () => {
+  if (coins >= 10) {
+    coins -= 10;
+    autoClickers++;
+    updateDisplay();
+  }
+});
+
+fastClickerButton.addEventListener("click", () => {
+  if (coins >= 100) {
+    coins -= 100;
+    fastClickers++;
+    updateDisplay();
+  }
+});
+
+saveButton.addEventListener("click", saveProgress);
+
+// Auto-Save and Auto-Generate Coins
+setInterval(generateCoins, 1000);
+setInterval(saveProgress, 5000);
+
+// Load progress on page load
+window.addEventListener('load', () => {
+  loadProgress();
+  saveProgress();
+});
+</script>
+</body>
+</html>
