@@ -64,8 +64,8 @@
     <p>Player: <span id="playerName"></span></p>
     <p>Coins: <span id="coins">0</span></p>
     <button id="clickButton">Click Me!</button>
-    <button id="autoClickerButton" disabled>Buy Auto-Clicker (10 coins)</button>
-    <button id="fastClickerButton" disabled>Buy Fast Clicker (100 coins)</button>
+    <button id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
+    <button id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
     <button id="saveButton">Save Game</button>
     <button id="toggleMusicButton">Toggle Music</button>
 
@@ -112,7 +112,6 @@ const moneySound = document.getElementById('moneySound');
 
 if (!musicEnabled) bgMusic.pause();
 
-// IndexedDB initialization
 function initDB() {
   const request = indexedDB.open('IdleGameDB', 1);
   request.onupgradeneeded = function(event) {
@@ -139,9 +138,17 @@ function updateDisplay() {
 }
 
 function updateLeaderboard() {
-  const scoreboard = [
-    { name: playerName, coins: coins, level: level }
-  ];
+  const scoreboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  const playerData = { name: playerName, coins, level };
+  const existingPlayer = scoreboard.find(p => p.name === playerName);
+  if (existingPlayer) {
+    existingPlayer.coins = coins;
+    existingPlayer.level = level;
+  } else {
+    scoreboard.push(playerData);
+  }
+  scoreboard.sort((a, b) => b.coins - a.coins);
+  localStorage.setItem('leaderboard', JSON.stringify(scoreboard));
   scoreboardDisplay.innerHTML = scoreboard.map(entry => `<li>${entry.name} - Level: ${entry.level}, Coins: ${entry.coins}</li>`).join('');
 }
 
@@ -151,26 +158,13 @@ function saveProgress() {
   const transaction = db.transaction(['saves'], 'readwrite');
   const store = transaction.objectStore('saves');
   store.put({ id: 'permanentSave', ...JSON.parse(saveData) });
-}
-
-function loadProgress() {
-  const transaction = db.transaction(['saves'], 'readonly');
-  const store = transaction.objectStore('saves');
-  const request = store.get('permanentSave');
-  request.onsuccess = function(event) {
-    const saveData = event.target.result || {};
-    coins = saveData.coins || 0;
-    autoClickers = saveData.autoClickers || 0;
-    fastClickers = saveData.fastClickers || 0;
-    level = saveData.level || 1;
-    milestones = saveData.milestones || milestones;
-    updateDisplay();
-  };
+  updateLeaderboard();
 }
 
 document.getElementById('saveButton').addEventListener('click', saveProgress);
-document.getElementById('startGameButton').addEventListener('click', () => { document.getElementById('menu').style.display = 'none'; document.getElementById('game').style.display = 'block'; });
 document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
+document.getElementById('autoClickerButton').addEventListener('click', () => { if (coins >= 10) { coins -= 10; autoClickers++; updateDisplay(); saveProgress(); }});
+document.getElementById('fastClickerButton').addEventListener('click', () => { if (coins >= 100) { coins -= 100; fastClickers++; updateDisplay(); saveProgress(); }});
 
 setInterval(() => { coins += autoClickers + (fastClickers * 5); updateDisplay(); saveProgress(); }, 1000);
 initDB();
