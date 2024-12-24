@@ -120,16 +120,28 @@ function updateDisplay() {
 }
 
 function saveProgress() {
-  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
+  const saveData = JSON.stringify({
+    coins: coins,
+    autoClickers: autoClickers,
+    fastClickers: fastClickers,
+    level: level,
+    milestones: milestones,
+    playerName: playerName
+  });
   localStorage.setItem('idleGameSave', saveData);
 }
+
 function loadProgress() {
   const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
   coins = saveData.coins || 0;
   autoClickers = saveData.autoClickers || 0;
   fastClickers = saveData.fastClickers || 0;
   level = saveData.level || 1;
-  milestones = saveData.milestones || milestones;
+  milestones = saveData.milestones || [
+    { goal: 100, achieved: false },
+    { goal: 5000, achieved: false },
+    { goal: 1000000, achieved: false }
+  ];
   updateDisplay();
 }
 
