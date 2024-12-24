@@ -67,6 +67,9 @@
     <button id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
     <button id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
     <button id="saveButton">Save Game</button>
+    <button id="loadButton">Load Game</button>
+    <button id="exportButton">Export Save</button>
+    <input type="file" id="importButton">
     <button id="toggleMusicButton">Toggle Music</button>
 
     <div class="stats">
@@ -84,22 +87,18 @@
   </div>
 
 <script>
-let coins = parseInt(localStorage.getItem('coins')) || 0;
-let autoClickers = parseInt(localStorage.getItem('autoClickers')) || 0;
-let fastClickers = parseInt(localStorage.getItem('fastClickers')) || 0;
-let level = parseInt(localStorage.getItem('level')) || 1;
+let coins = 0;
+let autoClickers = 0;
+let fastClickers = 0;
+let level = 1;
 let coinsNeededForNextLevel = 100;
-let milestones = JSON.parse(localStorage.getItem('milestones')) || [
+let milestones = [
   { goal: 100, achieved: false },
   { goal: 5000, achieved: false },
   { goal: 1000000, achieved: false }
 ];
 
-let playerName = localStorage.getItem('playerName');
-if (!playerName) {
-  playerName = prompt('Enter your player name:');
-  localStorage.setItem('playerName', playerName);
-}
+let playerName = prompt('Enter your player name:');
 document.getElementById('playerName').textContent = playerName;
 
 const coinsDisplay = document.getElementById('coins');
@@ -143,43 +142,40 @@ document.getElementById('fastClickerButton').addEventListener('click', () => {
   }
 });
 
-document.getElementById('toggleMusicButton').addEventListener('click', () => {
-  if (musicEnabled) {
-    bgMusic.pause();
-  } else {
-    bgMusic.play();
-  }
-  musicEnabled = !musicEnabled;
+// Save Progress
+function saveProgress() {
+  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
+  localStorage.setItem('idleGameSave', saveData);
+}
+
+document.getElementById('saveButton').addEventListener('click', saveProgress);
+
+document.getElementById('exportButton').addEventListener('click', () => {
+  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
+  const blob = new Blob([saveData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'idleGameSave.json';
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
-function updateDisplay() {
-  coinsDisplay.textContent = coins;
-  autoClickersDisplay.textContent = autoClickers;
-  fastClickersDisplay.textContent = fastClickers;
-  levelDisplay.textContent = level;
-  updateMilestonesDisplay();
-  updateScoreboard();
-}
-
-function updateMilestonesDisplay() {
-  milestones.forEach(m => {
-    if (!m.achieved && coins >= m.goal) {
-      m.achieved = true;
-    }
-  });
-  milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
-}
-
-function updateScoreboard() {
-  let scoreboard = JSON.parse(localStorage.getItem('scoreboard')) || [];
-  const playerData = { name: playerName, coins, level };
-  scoreboard = scoreboard.filter(p => p.name !== playerName);
-  scoreboard.push(playerData);
-  scoreboard.sort((a, b) => b.coins - a.coins);
-  localStorage.setItem('scoreboard', JSON.stringify(scoreboard));
-  scoreboardDisplay.innerHTML = scoreboard.map(p => `<li>${p.name}: Level ${p.level}, ${p.coins} coins</li>`).join('');
-}
-
+document.getElementById('importButton').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const data = JSON.parse(e.target.result);
+    coins = data.coins;
+    autoClickers = data.autoClickers;
+    fastClickers = data.fastClickers;
+    level = data.level;
+    milestones = data.milestones;
+    playerName = data.playerName;
+    updateDisplay();
+  };
+  reader.readAsText(file);
+});
 setInterval(() => {
   coins += autoClickers + (fastClickers * 5);
   updateDisplay();
