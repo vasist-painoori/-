@@ -125,28 +125,19 @@ function saveProgress() {
   });
   localStorage.setItem('idleGameSave', saveData);
   localStorage.setItem('idleGameBackup', saveData);
+  localStorage.setItem('idleGamePermanentBackup', saveData);
 }
 
 function loadProgress() {
   const saveData = JSON.parse(localStorage.getItem('idleGameSave')) ||
-                     JSON.parse(localStorage.getItem('idleGameBackup')) || {};
+                     JSON.parse(localStorage.getItem('idleGameBackup')) ||
+                     JSON.parse(localStorage.getItem('idleGamePermanentBackup')) || {};
   coins = saveData.coins || 0;
   autoClickers = saveData.autoClickers || 0;
   fastClickers = saveData.fastClickers || 0;
   level = saveData.level || 1;
   milestones = saveData.milestones || milestones;
   updateDisplay();
-}
-
-function updateScoreboard() {
-  let scoreboard = JSON.parse(localStorage.getItem('scoreboard')) || [];
-  const playerData = { name: playerName, coins, level };
-  scoreboard = scoreboard.filter(p => p.name !== playerName);
-  scoreboard.push(playerData);
-  scoreboard.sort((a, b) => b.coins - a.coins);
-  localStorage.setItem('scoreboard', JSON.stringify(scoreboard));
-  localStorage.setItem('scoreboardBackup', JSON.stringify(scoreboard));
-  scoreboardDisplay.innerHTML = scoreboard.map(p => `<li>${p.name}: Level ${p.level}, ${p.coins} coins</li>`).join('');
 }
 
 function checkMilestones() {
@@ -164,7 +155,6 @@ function checkLevelUp() {
 
 document.getElementById('startGameButton').addEventListener('click', () => {
   loadProgress();
-  updateScoreboard();
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
 });
@@ -176,15 +166,14 @@ document.getElementById('clickButton').addEventListener('click', () => {
   checkLevelUp();
   updateDisplay();
   saveProgress();
-  updateScoreboard();
 });
+
 setInterval(() => {
   coins += autoClickers + (fastClickers * 5);
   checkMilestones();
   checkLevelUp();
   updateDisplay();
   saveProgress();
-  updateScoreboard();
 }, 1000);
 </script>
 </body>
