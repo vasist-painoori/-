@@ -114,6 +114,28 @@ const moneySound = document.getElementById('moneySound');
 
 let musicEnabled = true;
 
+function updateDisplay() {
+  coinsDisplay.textContent = coins;
+  autoClickersDisplay.textContent = autoClickers;
+  fastClickersDisplay.textContent = fastClickers;
+  levelDisplay.textContent = level;
+}
+
+function saveProgress() {
+  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
+  localStorage.setItem('idleGameSave', saveData);
+}
+
+function loadProgress() {
+  const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
+  coins = saveData.coins || 0;
+  autoClickers = saveData.autoClickers || 0;
+  fastClickers = saveData.fastClickers || 0;
+  level = saveData.level || 1;
+  milestones = saveData.milestones || milestones;
+  updateDisplay();
+}
+
 document.getElementById('startGameButton').addEventListener('click', () => {
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
@@ -143,34 +165,6 @@ document.getElementById('fastClickerButton').addEventListener('click', () => {
     updateDisplay();
   }
 });
-
-function updateDisplay() {
-  coinsDisplay.textContent = coins;
-  autoClickersDisplay.textContent = autoClickers;
-  fastClickersDisplay.textContent = fastClickers;
-  levelDisplay.textContent = level;
-}
-
-function saveProgress() {
-  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
-  localStorage.setItem('idleGameSave', saveData);
-}
-
-document.getElementById('saveButton').addEventListener('click', saveProgress);
-
-document.getElementById('loadButton').addEventListener('click', () => {
-  loadProgress();
-  updateDisplay();
-});
-
-function loadProgress() {
-  const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
-  coins = saveData.coins || 0;
-  autoClickers = saveData.autoClickers || 0;
-  fastClickers = saveData.fastClickers || 0;
-  level = saveData.level || 1;
-  milestones = saveData.milestones || milestones;
-}
 
 setInterval(() => {
   coins += autoClickers + (fastClickers * 5);
