@@ -94,7 +94,7 @@ let milestones = [
   { goal: 5000, achieved: false },
   { goal: 1000000, achieved: false }
 ];
-
+let musicEnabled = JSON.parse(localStorage.getItem('musicEnabled')) ?? true;
 let playerName = localStorage.getItem('playerName') || prompt('Enter your player name:');
 localStorage.setItem('playerName', playerName);
 document.getElementById('playerName').textContent = playerName;
@@ -109,7 +109,7 @@ const bgMusic = document.getElementById('bgMusic');
 const buySound = document.getElementById('buySound');
 const moneySound = document.getElementById('moneySound');
 
-let musicEnabled = true;
+if (!musicEnabled) bgMusic.pause();
 
 function updateDisplay() {
   coinsDisplay.textContent = coins;
@@ -124,15 +124,17 @@ function saveProgress() {
     coins, autoClickers, fastClickers, level, milestones, playerName
   });
   localStorage.setItem('idleGameSave', saveData);
+  localStorage.setItem('idleGameBackup', saveData);
 }
 
 function loadProgress() {
-  const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
+  const saveData = JSON.parse(localStorage.getItem('idleGameSave')) ||
+                     JSON.parse(localStorage.getItem('idleGameBackup')) || {};
   coins = saveData.coins || 0;
   autoClickers = saveData.autoClickers || 0;
   fastClickers = saveData.fastClickers || 0;
   level = saveData.level || 1;
-  milestones = saveData.milestones ? saveData.milestones.map((m, i) => ({ ...milestones[i], achieved: m.achieved })) : milestones;
+  milestones = saveData.milestones || milestones;
   updateDisplay();
 }
 
@@ -143,6 +145,7 @@ function updateScoreboard() {
   scoreboard.push(playerData);
   scoreboard.sort((a, b) => b.coins - a.coins);
   localStorage.setItem('scoreboard', JSON.stringify(scoreboard));
+  localStorage.setItem('scoreboardBackup', JSON.stringify(scoreboard));
   scoreboardDisplay.innerHTML = scoreboard.map(p => `<li>${p.name}: Level ${p.level}, ${p.coins} coins</li>`).join('');
 }
 
