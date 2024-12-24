@@ -67,8 +67,6 @@
     <button id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
     <button id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
     <button id="saveButton">Save Game</button>
-    <button id="exportButton">Export Save</button>
-    <input type="file" id="importButton">
     <button id="toggleMusicButton">Toggle Music</button>
 
     <div class="stats">
@@ -118,16 +116,14 @@ function updateDisplay() {
   autoClickersDisplay.textContent = autoClickers;
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
+  milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
 }
 
 function saveProgress() {
   const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
   localStorage.setItem('idleGameSave', saveData);
 }
-
-document.getElementById('startGameButton').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
+function loadProgress() {
   const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
   coins = saveData.coins || 0;
   autoClickers = saveData.autoClickers || 0;
@@ -135,12 +131,34 @@ document.getElementById('startGameButton').addEventListener('click', () => {
   level = saveData.level || 1;
   milestones = saveData.milestones || milestones;
   updateDisplay();
+}
+
+function checkMilestones() {
+  milestones.forEach(m => {
+    if (!m.achieved && coins >= m.goal) m.achieved = true;
+  });
+}
+function checkLevelUp() {
+  while (coins >= coinsNeededForNextLevel) {
+    coins -= coinsNeededForNextLevel;
+    level++;
+    coinsNeededForNextLevel *= 2;
+  }
+}
+
+document.getElementById('startGameButton').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+  loadProgress();
 });
 
 document.getElementById('clickButton').addEventListener('click', () => {
   coins++;
   moneySound.play();
+  checkMilestones();
+  checkLevelUp();
   updateDisplay();
+  saveProgress();
 });
 
 document.getElementById('autoClickerButton').addEventListener('click', () => {
@@ -149,6 +167,7 @@ document.getElementById('autoClickerButton').addEventListener('click', () => {
     autoClickers++;
     buySound.play();
     updateDisplay();
+    saveProgress();
   }
 });
 
@@ -158,11 +177,14 @@ document.getElementById('fastClickerButton').addEventListener('click', () => {
     fastClickers++;
     buySound.play();
     updateDisplay();
+    saveProgress();
   }
 });
 
 setInterval(() => {
   coins += autoClickers + (fastClickers * 5);
+  checkMilestones();
+  checkLevelUp();
   updateDisplay();
   saveProgress();
 }, 1000);
