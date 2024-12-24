@@ -133,8 +133,16 @@ function updateDisplay() {
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
+  updateLeaderboard();
   document.getElementById('autoClickerButton').disabled = coins < 10;
   document.getElementById('fastClickerButton').disabled = coins < 100;
+}
+
+function updateLeaderboard() {
+  const scoreboard = [
+    { name: playerName, coins: coins, level: level }
+  ];
+  scoreboardDisplay.innerHTML = scoreboard.map(entry => `<li>${entry.name} - Level: ${entry.level}, Coins: ${entry.coins}</li>`).join('');
 }
 
 function saveProgress() {
@@ -160,7 +168,6 @@ function loadProgress() {
   };
 }
 
-// Event Listeners
 document.getElementById('saveButton').addEventListener('click', saveProgress);
 document.getElementById('startGameButton').addEventListener('click', () => { document.getElementById('menu').style.display = 'none'; document.getElementById('game').style.display = 'block'; });
 document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
