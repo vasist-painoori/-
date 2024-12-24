@@ -67,7 +67,6 @@
     <button id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
     <button id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
     <button id="saveButton">Save Game</button>
-    <button id="loadButton">Load Game</button>
     <button id="exportButton">Export Save</button>
     <input type="file" id="importButton">
     <button id="toggleMusicButton">Toggle Music</button>
@@ -126,7 +125,9 @@ function saveProgress() {
   localStorage.setItem('idleGameSave', saveData);
 }
 
-function loadProgress() {
+document.getElementById('startGameButton').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
   const saveData = JSON.parse(localStorage.getItem('idleGameSave')) || {};
   coins = saveData.coins || 0;
   autoClickers = saveData.autoClickers || 0;
@@ -134,12 +135,6 @@ function loadProgress() {
   level = saveData.level || 1;
   milestones = saveData.milestones || milestones;
   updateDisplay();
-}
-
-document.getElementById('startGameButton').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
-  loadProgress();
 });
 
 document.getElementById('clickButton').addEventListener('click', () => {
