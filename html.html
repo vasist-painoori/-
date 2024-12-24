@@ -64,8 +64,8 @@
     <p>Player: <span id="playerName"></span></p>
     <p>Coins: <span id="coins">0</span></p>
     <button id="clickButton">Click Me!</button>
-    <button id="autoClickerButton">Buy Auto-Clicker (10 coins)</button>
-    <button id="fastClickerButton">Buy Fast Clicker (100 coins)</button>
+    <button id="autoClickerButton" disabled>Buy Auto-Clicker (10 coins)</button>
+    <button id="fastClickerButton" disabled>Buy Fast Clicker (100 coins)</button>
     <button id="saveButton">Save Game</button>
     <button id="toggleMusicButton">Toggle Music</button>
 
@@ -112,6 +112,7 @@ const moneySound = document.getElementById('moneySound');
 
 if (!musicEnabled) bgMusic.pause();
 
+// IndexedDB initialization
 function initDB() {
   const request = indexedDB.open('IdleGameDB', 1);
   request.onupgradeneeded = function(event) {
@@ -132,13 +133,16 @@ function updateDisplay() {
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
+  document.getElementById('autoClickerButton').disabled = coins < 10;
+  document.getElementById('fastClickerButton').disabled = coins < 100;
 }
 
 function saveProgress() {
-  const saveData = { id: 'permanentSave', coins, autoClickers, fastClickers, level, milestones, playerName };
+  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
+  localStorage.setItem('idleGameSave', saveData);
   const transaction = db.transaction(['saves'], 'readwrite');
   const store = transaction.objectStore('saves');
-  store.put(saveData);
+  store.put({ id: 'permanentSave', ...JSON.parse(saveData) });
 }
 
 function loadProgress() {
@@ -156,23 +160,12 @@ function loadProgress() {
   };
 }
 
+// Event Listeners
 document.getElementById('saveButton').addEventListener('click', saveProgress);
-document.getElementById('startGameButton').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
-});
+document.getElementById('startGameButton').addEventListener('click', () => { document.getElementById('menu').style.display = 'none'; document.getElementById('game').style.display = 'block'; });
+document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
 
-document.getElementById('clickButton').addEventListener('click', () => {
-  coins++;
-  moneySound.play();
-  updateDisplay();
-  saveProgress();
-});
-setInterval(() => {
-  coins += autoClickers + (fastClickers * 5);
-  updateDisplay();
-  saveProgress();
-}, 1000);
+setInterval(() => { coins += autoClickers + (fastClickers * 5); updateDisplay(); saveProgress(); }, 1000);
 initDB();
 </script>
 </body>
