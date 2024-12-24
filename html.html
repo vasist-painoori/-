@@ -138,12 +138,11 @@ function updateDisplay() {
 }
 
 function updateLeaderboard() {
-  const scoreboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+  let scoreboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
   const playerData = { name: playerName, coins, level };
-  const existingPlayer = scoreboard.find(p => p.name === playerName);
-  if (existingPlayer) {
-    existingPlayer.coins = coins;
-    existingPlayer.level = level;
+  const index = scoreboard.findIndex(p => p.name === playerName);
+  if (index !== -1) {
+    scoreboard[index] = playerData;
   } else {
     scoreboard.push(playerData);
   }
@@ -163,8 +162,8 @@ function saveProgress() {
 
 document.getElementById('saveButton').addEventListener('click', saveProgress);
 document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
-document.getElementById('autoClickerButton').addEventListener('click', () => { if (coins >= 10) { coins -= 10; autoClickers++; updateDisplay(); saveProgress(); }});
-document.getElementById('fastClickerButton').addEventListener('click', () => { if (coins >= 100) { coins -= 100; fastClickers++; updateDisplay(); saveProgress(); }});
+document.getElementById('autoClickerButton').addEventListener('click', () => { if (coins >= 10) { coins -= 10; autoClickers++; buySound.play(); updateDisplay(); saveProgress(); }});
+document.getElementById('fastClickerButton').addEventListener('click', () => { if (coins >= 100) { coins -= 100; fastClickers++; buySound.play(); updateDisplay(); saveProgress(); }});
 
 setInterval(() => { coins += autoClickers + (fastClickers * 5); updateDisplay(); saveProgress(); }, 1000);
 initDB();
