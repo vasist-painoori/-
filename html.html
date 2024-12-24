@@ -84,6 +84,7 @@
   </div>
 
 <script>
+let db;
 let coins = 0;
 let autoClickers = 0;
 let fastClickers = 0;
@@ -111,6 +112,20 @@ const moneySound = document.getElementById('moneySound');
 
 if (!musicEnabled) bgMusic.pause();
 
+function initDB() {
+  const request = indexedDB.open('IdleGameDB', 1);
+  request.onupgradeneeded = function(event) {
+    const db = event.target.result;
+    if (!db.objectStoreNames.contains('saves')) {
+      db.createObjectStore('saves', { keyPath: 'id' });
+    }
+  };
+  request.onsuccess = function(event) {
+    db = event.target.result;
+    loadProgress();
+  };
+}
+
 function updateDisplay() {
   coinsDisplay.textContent = coins;
   autoClickersDisplay.textContent = autoClickers;
@@ -120,41 +135,29 @@ function updateDisplay() {
 }
 
 function saveProgress() {
-  const saveData = JSON.stringify({
-    coins, autoClickers, fastClickers, level, milestones, playerName
-  });
-  localStorage.setItem('idleGameSave', saveData);
-  localStorage.setItem('idleGameBackup', saveData);
-  localStorage.setItem('idleGamePermanentBackup', saveData);
+  const saveData = { id: 'permanentSave', coins, autoClickers, fastClickers, level, milestones, playerName };
+  const transaction = db.transaction(['saves'], 'readwrite');
+  const store = transaction.objectStore('saves');
+  store.put(saveData);
 }
 
 function loadProgress() {
-  const saveData = JSON.parse(localStorage.getItem('idleGameSave')) ||
-                     JSON.parse(localStorage.getItem('idleGameBackup')) ||
-                     JSON.parse(localStorage.getItem('idleGamePermanentBackup')) || {};
-  coins = saveData.coins || 0;
-  autoClickers = saveData.autoClickers || 0;
-  fastClickers = saveData.fastClickers || 0;
-  level = saveData.level || 1;
-  milestones = saveData.milestones || milestones;
-  updateDisplay();
+  const transaction = db.transaction(['saves'], 'readonly');
+  const store = transaction.objectStore('saves');
+  const request = store.get('permanentSave');
+  request.onsuccess = function(event) {
+    const saveData = event.target.result || {};
+    coins = saveData.coins || 0;
+    autoClickers = saveData.autoClickers || 0;
+    fastClickers = saveData.fastClickers || 0;
+    level = saveData.level || 1;
+    milestones = saveData.milestones || milestones;
+    updateDisplay();
+  };
 }
 
-function checkMilestones() {
-  milestones.forEach(m => {
-    if (!m.achieved && coins >= m.goal) m.achieved = true;
-  });
-}
-function checkLevelUp() {
-  while (coins >= coinsNeededForNextLevel) {
-    coins -= coinsNeededForNextLevel;
-    level++;
-    coinsNeededForNextLevel *= 2;
-  }
-}
-
+document.getElementById('saveButton').addEventListener('click', saveProgress);
 document.getElementById('startGameButton').addEventListener('click', () => {
-  loadProgress();
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
 });
@@ -162,19 +165,15 @@ document.getElementById('startGameButton').addEventListener('click', () => {
 document.getElementById('clickButton').addEventListener('click', () => {
   coins++;
   moneySound.play();
-  checkMilestones();
-  checkLevelUp();
   updateDisplay();
   saveProgress();
 });
-
 setInterval(() => {
   coins += autoClickers + (fastClickers * 5);
-  checkMilestones();
-  checkLevelUp();
   updateDisplay();
   saveProgress();
 }, 1000);
+initDB();
 </script>
 </body>
 </html>
