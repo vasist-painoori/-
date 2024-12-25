@@ -152,12 +152,10 @@ function updateLeaderboard() {
 }
 
 function saveProgress() {
-  const saveData = JSON.stringify({ coins, autoClickers, fastClickers, level, milestones, playerName });
-  localStorage.setItem('idleGameSave', saveData);
+  const saveData = { coins, autoClickers, fastClickers, level, milestones, playerName };
   const transaction = db.transaction(['saves'], 'readwrite');
   const store = transaction.objectStore('saves');
-  store.put({ id: 'permanentSave', ...JSON.parse(saveData) });
-  updateLeaderboard();
+  store.put({ id: 'permanentSave', ...saveData });
 }
 
 document.getElementById('startGameButton').addEventListener('click', () => {
@@ -166,10 +164,6 @@ document.getElementById('startGameButton').addEventListener('click', () => {
 });
 
 document.getElementById('saveButton').addEventListener('click', saveProgress);
-document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
-document.getElementById('autoClickerButton').addEventListener('click', () => { if (coins >= 10) { coins -= 10; autoClickers++; buySound.play(); updateDisplay(); saveProgress(); }});
-document.getElementById('fastClickerButton').addEventListener('click', () => { if (coins >= 100) { coins -= 100; fastClickers++; buySound.play(); updateDisplay(); saveProgress(); }});
-
 setInterval(() => { coins += autoClickers + (fastClickers * 5); updateDisplay(); saveProgress(); }, 1000);
 initDB();
 </script>
