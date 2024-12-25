@@ -159,14 +159,23 @@ function updateDisplay() {
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
 }
 
+function updateScoreboard() {
+  scoreboardDisplay.innerHTML = `<li>${playerName}: Level ${level}, Coins: ${coins}</li>`;
+}
+
 document.getElementById('startGameButton').addEventListener('click', () => {
   document.getElementById('menu').style.display = 'none';
   document.getElementById('game').style.display = 'block';
 });
 
-document.getElementById('clickButton').addEventListener('click', () => { coins++; updateDisplay(); saveProgress(); });
+document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); updateScoreboard(); });
 
-document.getElementById('saveButton').addEventListener('click', saveProgress);
+document.getElementById('toggleMusicButton').addEventListener('click', () => {
+  musicEnabled = !musicEnabled;
+  localStorage.setItem('musicEnabled', JSON.stringify(musicEnabled));
+  bgMusic[musicEnabled ? 'play' : 'pause']();
+});
+
 initDB();
 </script>
 </body>
