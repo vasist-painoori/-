@@ -111,8 +111,6 @@ const scoreboardDisplay = document.getElementById('scoreboard');
 const bgMusic = document.getElementById('bgMusic');
 const buySound = document.getElementById('buySound');
 const moneySound = document.getElementById('moneySound');
-const autoClickerButton = document.getElementById('autoClickerButton');
-const fastClickerButton = document.getElementById('fastClickerButton');
 
 if (!musicEnabled) bgMusic.pause();
 
@@ -147,8 +145,10 @@ function loadProgress() {
   };
 }
 
-function updateMilestones() {
-  milestones.forEach(m => m.achieved = coins >= m.goal);
+function saveProgress() {
+  const transaction = db.transaction(['saves'], 'readwrite');
+  const store = transaction.objectStore('saves');
+  store.put({ id: 'permanentSave', coins, autoClickers, fastClickers, level, milestones });
 }
 
 function updateDisplay() {
@@ -159,10 +159,14 @@ function updateDisplay() {
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
 }
 
-document.getElementById('clickButton').addEventListener('click', () => { coins++; updateMilestones(); moneySound.play(); updateDisplay(); });
+document.getElementById('startGameButton').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+});
 
-document.getElementById('saveButton').addEventListener('click', () => saveProgress());
+document.getElementById('clickButton').addEventListener('click', () => { coins++; updateDisplay(); saveProgress(); });
 
+document.getElementById('saveButton').addEventListener('click', saveProgress);
 initDB();
 </script>
 </body>
