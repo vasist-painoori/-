@@ -157,6 +157,7 @@ function updateDisplay() {
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
+  scoreboardDisplay.innerHTML = `<li>${playerName}: Level ${level}, Coins ${coins}</li>`;
 }
 
 document.getElementById('startGameButton').addEventListener('click', () => {
@@ -166,12 +167,31 @@ document.getElementById('startGameButton').addEventListener('click', () => {
 
 document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
 
+document.getElementById('autoClickerButton').addEventListener('click', () => {
+  if (coins >= autoClickerPrice) {
+    coins -= autoClickerPrice;
+    autoClickers++;
+    autoClickerPrice *= 2;
+    updateDisplay();
+    saveProgress();
+  }
+});
+
+document.getElementById('fastClickerButton').addEventListener('click', () => {
+  if (coins >= fastClickerPrice) {
+    coins -= fastClickerPrice;
+    fastClickers++;
+    fastClickerPrice *= 2;
+    updateDisplay();
+    saveProgress();
+  }
+});
+
 document.getElementById('toggleMusicButton').addEventListener('click', () => {
   musicEnabled = !musicEnabled;
   localStorage.setItem('musicEnabled', JSON.stringify(musicEnabled));
   bgMusic[musicEnabled ? 'play' : 'pause']();
 });
-
 initDB();
 </script>
 </body>
