@@ -90,6 +90,8 @@ let autoClickers = 0;
 let fastClickers = 0;
 let level = 1;
 let coinsNeededForNextLevel = 100;
+let autoClickerPrice = 10;
+let fastClickerPrice = 100;
 let milestones = [
   { goal: 100, achieved: false },
   { goal: 5000, achieved: false },
@@ -109,6 +111,8 @@ const scoreboardDisplay = document.getElementById('scoreboard');
 const bgMusic = document.getElementById('bgMusic');
 const buySound = document.getElementById('buySound');
 const moneySound = document.getElementById('moneySound');
+const autoClickerButton = document.getElementById('autoClickerButton');
+const fastClickerButton = document.getElementById('fastClickerButton');
 
 if (!musicEnabled) bgMusic.pause();
 
@@ -138,9 +142,17 @@ function loadProgress() {
       fastClickers = saveData.fastClickers || 0;
       level = saveData.level || 1;
       milestones = saveData.milestones || milestones;
+      updatePrices();
       updateDisplay();
     }
   };
+}
+
+function updatePrices() {
+  autoClickerPrice = 10 * level;
+  fastClickerPrice = 100 * level;
+  autoClickerButton.textContent = `Buy Auto-Clicker (${autoClickerPrice} coins)`;
+  fastClickerButton.textContent = `Buy Fast Clicker (${fastClickerPrice} coins)`;
 }
 
 function updateDisplay() {
@@ -149,6 +161,7 @@ function updateDisplay() {
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
+  updatePrices();
 }
 
 function saveProgress() {
@@ -163,7 +176,8 @@ document.getElementById('startGameButton').addEventListener('click', () => {
   document.getElementById('game').style.display = 'block';
 });
 
-document.getElementById('saveButton').addEventListener('click', saveProgress);
+document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
+document.getElementById('toggleMusicButton').addEventListener('click', () => { musicEnabled = !musicEnabled; localStorage.setItem('musicEnabled', JSON.stringify(musicEnabled)); musicEnabled ? bgMusic.play() : bgMusic.pause(); });
 setInterval(() => { coins += autoClickers + (fastClickers * 5); updateDisplay(); saveProgress(); }, 1000);
 initDB();
 </script>
