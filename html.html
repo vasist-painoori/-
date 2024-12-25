@@ -160,6 +160,11 @@ function saveProgress() {
   updateLeaderboard();
 }
 
+document.getElementById('startGameButton').addEventListener('click', () => {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+});
+
 document.getElementById('saveButton').addEventListener('click', saveProgress);
 document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
 document.getElementById('autoClickerButton').addEventListener('click', () => { if (coins >= 10) { coins -= 10; autoClickers++; buySound.play(); updateDisplay(); saveProgress(); }});
