@@ -142,17 +142,13 @@ function loadProgress() {
       fastClickers = saveData.fastClickers || 0;
       level = saveData.level || 1;
       milestones = saveData.milestones || milestones;
-      updatePrices();
       updateDisplay();
     }
   };
 }
 
-function updatePrices() {
-  autoClickerPrice = 10 * level;
-  fastClickerPrice = 100 * level;
-  autoClickerButton.textContent = `Buy Auto-Clicker (${autoClickerPrice} coins)`;
-  fastClickerButton.textContent = `Buy Fast Clicker (${fastClickerPrice} coins)`;
+function updateMilestones() {
+  milestones.forEach(m => m.achieved = coins >= m.goal);
 }
 
 function updateDisplay() {
@@ -161,24 +157,12 @@ function updateDisplay() {
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
-  updatePrices();
 }
 
-function saveProgress() {
-  const saveData = { coins, autoClickers, fastClickers, level, milestones, playerName };
-  const transaction = db.transaction(['saves'], 'readwrite');
-  const store = transaction.objectStore('saves');
-  store.put({ id: 'permanentSave', ...saveData });
-}
+document.getElementById('clickButton').addEventListener('click', () => { coins++; updateMilestones(); moneySound.play(); updateDisplay(); });
 
-document.getElementById('startGameButton').addEventListener('click', () => {
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
-});
+document.getElementById('saveButton').addEventListener('click', () => saveProgress());
 
-document.getElementById('clickButton').addEventListener('click', () => { coins++; moneySound.play(); updateDisplay(); saveProgress(); });
-document.getElementById('toggleMusicButton').addEventListener('click', () => { musicEnabled = !musicEnabled; localStorage.setItem('musicEnabled', JSON.stringify(musicEnabled)); musicEnabled ? bgMusic.play() : bgMusic.pause(); });
-setInterval(() => { coins += autoClickers + (fastClickers * 5); updateDisplay(); saveProgress(); }, 1000);
 initDB();
 </script>
 </body>
