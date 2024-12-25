@@ -126,29 +126,29 @@ function initDB() {
   };
 }
 
+function loadProgress() {
+  const transaction = db.transaction(['saves'], 'readonly');
+  const store = transaction.objectStore('saves');
+  const request = store.get('permanentSave');
+  request.onsuccess = function(event) {
+    const saveData = event.target.result;
+    if (saveData) {
+      coins = saveData.coins || 0;
+      autoClickers = saveData.autoClickers || 0;
+      fastClickers = saveData.fastClickers || 0;
+      level = saveData.level || 1;
+      milestones = saveData.milestones || milestones;
+      updateDisplay();
+    }
+  };
+}
+
 function updateDisplay() {
   coinsDisplay.textContent = coins;
   autoClickersDisplay.textContent = autoClickers;
   fastClickersDisplay.textContent = fastClickers;
   levelDisplay.textContent = level;
   milestonesDisplay.innerHTML = milestones.map(m => `<li>${m.goal}: ${m.achieved ? 'Achieved' : 'Not Achieved'}</li>`).join('');
-  updateLeaderboard();
-  document.getElementById('autoClickerButton').disabled = coins < 10;
-  document.getElementById('fastClickerButton').disabled = coins < 100;
-}
-
-function updateLeaderboard() {
-  let scoreboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-  const playerData = { name: playerName, coins, level };
-  const index = scoreboard.findIndex(p => p.name === playerName);
-  if (index !== -1) {
-    scoreboard[index] = playerData;
-  } else {
-    scoreboard.push(playerData);
-  }
-  scoreboard.sort((a, b) => b.coins - a.coins);
-  localStorage.setItem('leaderboard', JSON.stringify(scoreboard));
-  scoreboardDisplay.innerHTML = scoreboard.map(entry => `<li>${entry.name} - Level: ${entry.level}, Coins: ${entry.coins}</li>`).join('');
 }
 
 function saveProgress() {
